@@ -31,6 +31,7 @@ type Formation = {
   rating: number;   // /5
   rncp: boolean;    // reconnu RNCP
   description: string;
+  imageUrl?: string;
 };
 
 const SECTORS: Sector[] = [
@@ -42,32 +43,183 @@ const SECTORS: Sector[] = [
 
 const TYPES: FormationType[] = ["Master", "École", "BUT", "Licence", "BTS", "MBA"];
 
-const SEED: Formation[] = [
-  { id: "1", name: "MSc Data Science", school: "Polytechnique", city: "Palaiseau", type: "Master", sector: "Tech & Digital", duration: "2 ans", level: "Bac+5", tuition: "16 000 €/an", rating: 4.8, rncp: true, description: "Programme intensif en machine learning et data engineering." },
-  { id: "2", name: "Grande École", school: "HEC Paris", city: "Jouy-en-Josas", type: "École", sector: "Business & Management", duration: "3 ans", level: "Bac+5", tuition: "21 000 €/an", rating: 4.9, rncp: true, description: "Programme grande école, classé #1 européen." },
-  { id: "3", name: "Master Finance", school: "ESSEC", city: "Cergy", type: "Master", sector: "Finance", duration: "2 ans", level: "Bac+5", tuition: "20 000 €/an", rating: 4.7, rncp: true, description: "Spécialisation marchés financiers et corporate finance." },
-  { id: "4", name: "MBA Marketing Digital", school: "EM Lyon", city: "Lyon", type: "MBA", sector: "Marketing & Com", duration: "1 an", level: "Bac+5", tuition: "18 500 €", rating: 4.5, rncp: true, description: "MBA spécialisé en marketing data-driven et growth." },
-  { id: "5", name: "MSc Computer Science", school: "EPITA", city: "Paris", type: "École", sector: "Tech & Digital", duration: "5 ans", level: "Bac+5", tuition: "9 800 €/an", rating: 4.4, rncp: true, description: "École d'ingénieurs spécialisée en informatique." },
-  { id: "6", name: "BUT Informatique", school: "IUT Lyon 1", city: "Lyon", type: "BUT", sector: "Tech & Digital", duration: "3 ans", level: "Bac+3", tuition: "Gratuit (public)", rating: 4.3, rncp: true, description: "Formation pro courte, alternance possible dès la 2ᵉ année." },
-  { id: "7", name: "BUT MMI", school: "IUT Bordeaux", city: "Bordeaux", type: "BUT", sector: "Design & Création", duration: "3 ans", level: "Bac+3", tuition: "Gratuit (public)", rating: 4.2, rncp: true, description: "Métiers du multimédia et de l'internet : design, dev, com." },
-  { id: "8", name: "Bachelor UX Design", school: "Les Gobelins", city: "Paris", type: "École", sector: "Design & Création", duration: "3 ans", level: "Bac+3", tuition: "8 900 €/an", rating: 4.6, rncp: true, description: "Référence européenne en design d'interaction." },
-  { id: "9", name: "Master Droit des Affaires", school: "Paris 1 Panthéon-Sorbonne", city: "Paris", type: "Master", sector: "Droit", duration: "2 ans", level: "Bac+5", tuition: "Gratuit (public)", rating: 4.5, rncp: true, description: "Droit des sociétés, M&A, contentieux." },
-  { id: "10", name: "PASS / L.AS", school: "Sorbonne Université", city: "Paris", type: "Licence", sector: "Santé & Bio", duration: "1 an", level: "Bac+1", tuition: "Gratuit (public)", rating: 4.0, rncp: true, description: "Parcours d'accès aux études de santé (médecine, pharma, dentaire)." },
-  { id: "11", name: "Diplôme d'Ingénieur", school: "CentraleSupélec", city: "Gif-sur-Yvette", type: "École", sector: "Sciences & Ingénierie", duration: "3 ans", level: "Bac+5", tuition: "2 500 €/an", rating: 4.9, rncp: true, description: "Ingénieur généraliste sur un large spectre scientifique." },
-  { id: "12", name: "Master Architecture", school: "ENSA Paris-Malaquais", city: "Paris", type: "Master", sector: "Architecture", duration: "2 ans", level: "Bac+5", tuition: "Gratuit (public)", rating: 4.4, rncp: true, description: "DEA permettant d'exercer en tant qu'architecte." },
-  { id: "13", name: "Master Cinéma", school: "La Fémis", city: "Paris", type: "École", sector: "Audiovisuel", duration: "4 ans", level: "Bac+5", tuition: "500 €/an", rating: 4.8, rncp: true, description: "École nationale supérieure des métiers de l'image et du son." },
-  { id: "14", name: "Master Sciences Po", school: "Sciences Po Paris", city: "Paris", type: "Master", sector: "Sciences sociales", duration: "2 ans", level: "Bac+5", tuition: "14 000 €/an", rating: 4.7, rncp: true, description: "13 masters : affaires publiques, journalisme, droit, etc." },
-  { id: "15", name: "BTS Tourisme", school: "CFA Tourisme", city: "Marseille", type: "BTS", sector: "Hôtellerie & Tourisme", duration: "2 ans", level: "Bac+2", tuition: "Gratuit (alternance)", rating: 3.9, rncp: true, description: "Formation pro courte en gestion touristique." },
-  { id: "16", name: "Licence STAPS", school: "Université Paris-Saclay", city: "Orsay", type: "Licence", sector: "Sport", duration: "3 ans", level: "Bac+3", tuition: "Gratuit (public)", rating: 4.1, rncp: true, description: "Sciences et techniques des activités physiques et sportives." },
-  { id: "17", name: "Master MEEF", school: "INSPÉ Lyon", city: "Lyon", type: "Master", sector: "Enseignement", duration: "2 ans", level: "Bac+5", tuition: "Gratuit (public)", rating: 4.0, rncp: true, description: "Métiers de l'enseignement, de l'éducation et de la formation." },
-  { id: "18", name: "Master Environnement", school: "AgroParisTech", city: "Palaiseau", type: "Master", sector: "Environnement", duration: "2 ans", level: "Bac+5", tuition: "2 500 €/an", rating: 4.6, rncp: true, description: "Sciences et ingénierie de l'environnement et du vivant." },
-  { id: "19", name: "Master LLCE Anglais", school: "Paris Nanterre", city: "Nanterre", type: "Master", sector: "Lettres & Langues", duration: "2 ans", level: "Bac+5", tuition: "Gratuit (public)", rating: 4.2, rncp: true, description: "Langues, littératures et civilisations étrangères." },
-  { id: "20", name: "MSc Cybersecurity", school: "Telecom Paris", city: "Palaiseau", type: "Master", sector: "Tech & Digital", duration: "2 ans", level: "Bac+5", tuition: "14 000 €/an", rating: 4.7, rncp: true, description: "Spécialisation en cybersécurité offensive et défensive." },
-  { id: "21", name: "Bachelor Communication", school: "CELSA Sorbonne", city: "Neuilly", type: "Licence", sector: "Marketing & Com", duration: "3 ans", level: "Bac+3", tuition: "Gratuit (public)", rating: 4.5, rncp: true, description: "Référence en sciences de l'information et de la communication." },
-  { id: "22", name: "Diplôme Vétérinaire", school: "ENVA Maisons-Alfort", city: "Maisons-Alfort", type: "École", sector: "Santé & Bio", duration: "6 ans", level: "Bac+6", tuition: "5 000 €/an", rating: 4.6, rncp: true, description: "École nationale vétérinaire d'Alfort." },
-  { id: "23", name: "Master Game Design", school: "Rubika", city: "Valenciennes", type: "École", sector: "Audiovisuel", duration: "5 ans", level: "Bac+5", tuition: "8 200 €/an", rating: 4.3, rncp: true, description: "Game design, programmation et art pour le jeu vidéo." },
-  { id: "24", name: "Master Économie", school: "PSE - Paris School of Economics", city: "Paris", type: "Master", sector: "Finance", duration: "2 ans", level: "Bac+5", tuition: "Gratuit (public)", rating: 4.8, rncp: true, description: "Top mondial en recherche économique." },
+const SEED: Formation[] = generateSeedFormations();
+
+type FormationTemplate = {
+  name: string;
+  type: FormationType;
+  sector: Sector;
+  duration: string;
+  level: string;
+  tuition: string;
+  rating?: number;
+  rncp: boolean;
+  baseDescription: string;
+};
+
+const FORMATION_TEMPLATES: FormationTemplate[] = [
+  { name: "Licence Droit", type: "Licence", sector: "Droit", duration: "3 ans", level: "Bac+3", tuition: "Gratuit (public)", rncp: true, baseDescription: "Licence en droit public, privé et contentieux." },
+  { name: "Licence Économie-Gestion", type: "Licence", sector: "Business & Management", duration: "3 ans", level: "Bac+3", tuition: "Gratuit (public)", rncp: true, baseDescription: "Formation en économie, gestion et management." },
+  { name: "Licence Informatique", type: "Licence", sector: "Tech & Digital", duration: "3 ans", level: "Bac+3", tuition: "Gratuit (public)", rncp: true, baseDescription: "Informatique, développement et systèmes d'information." },
+  { name: "Licence Psychologie", type: "Licence", sector: "Sciences sociales", duration: "3 ans", level: "Bac+3", tuition: "Gratuit (public)", rncp: true, baseDescription: "Étude du comportement humain et des relations sociales." },
+  { name: "Licence STAPS", type: "Licence", sector: "Sport", duration: "3 ans", level: "Bac+3", tuition: "Gratuit (public)", rncp: true, baseDescription: "Sciences et techniques des activités physiques et sportives." },
+  { name: "Licence Lettres Modernes", type: "Licence", sector: "Lettres & Langues", duration: "3 ans", level: "Bac+3", tuition: "Gratuit (public)", rncp: true, baseDescription: "Formation en lettres, littérature et communication écrite." },
+  { name: "Licence Science Politique", type: "Licence", sector: "Sciences sociales", duration: "3 ans", level: "Bac+3", tuition: "Gratuit (public)", rncp: true, baseDescription: "Étude des institutions, politiques et relations internationales." },
+  { name: "BUT Informatique", type: "BUT", sector: "Tech & Digital", duration: "3 ans", level: "Bac+3", tuition: "Gratuit (public)", rncp: true, baseDescription: "Formation professionnalisante en développement logiciel." },
+  { name: "BUT Génie Civil", type: "BUT", sector: "Sciences & Ingénierie", duration: "3 ans", level: "Bac+3", tuition: "Gratuit (public)", rncp: true, baseDescription: "Conception, construction et maintenance du bâti." },
+  { name: "BUT MMI", type: "BUT", sector: "Design & Création", duration: "3 ans", level: "Bac+3", tuition: "Gratuit (public)", rncp: true, baseDescription: "Multimédia, communication digitale et design interactif." },
+  { name: "BUT GEII", type: "BUT", sector: "Tech & Digital", duration: "3 ans", level: "Bac+3", tuition: "Gratuit (public)", rncp: true, baseDescription: "Électronique, informatique industrielle et réseaux." },
+  { name: "BTS NDRC", type: "BTS", sector: "Business & Management", duration: "2 ans", level: "Bac+2", tuition: "Gratuit (public)", rncp: true, baseDescription: "Négociation et digitalisation de la relation client." },
+  { name: "BTS Comptabilité et Gestion", type: "BTS", sector: "Business & Management", duration: "2 ans", level: "Bac+2", tuition: "Gratuit (public)", rncp: true, baseDescription: "Comptabilité, finance et gestion d'entreprise." },
+  { name: "BTS Communication", type: "BTS", sector: "Marketing & Com", duration: "2 ans", level: "Bac+2", tuition: "Gratuit (public)", rncp: true, baseDescription: "Techniques de communication, événementiel et publicité." },
+  { name: "BTS Tourisme", type: "BTS", sector: "Hôtellerie & Tourisme", duration: "2 ans", level: "Bac+2", tuition: "Gratuit (public)", rncp: true, baseDescription: "Accueil, gestion et commercialisation touristique." },
+  { name: "BTS Services Informatiques aux Organisations", type: "BTS", sector: "Tech & Digital", duration: "2 ans", level: "Bac+2", tuition: "Gratuit (public)", rncp: true, baseDescription: "Support et développement des services informatiques." },
+  { name: "Bachelor Commerce International", type: "Licence", sector: "Business & Management", duration: "3 ans", level: "Bac+3", tuition: "7 200 €/an", rating: 4.3, rncp: true, baseDescription: "Commerce international, export et logistique." },
+  { name: "Bachelor UX/UI", type: "Licence", sector: "Design & Création", duration: "3 ans", level: "Bac+3", tuition: "7 500 €/an", rncp: true, baseDescription: "Design d'interfaces et expérience utilisateur." },
+  { name: "Bachelor Marketing Digital", type: "Licence", sector: "Marketing & Com", duration: "3 ans", level: "Bac+3", tuition: "8 000 €/an", rncp: true, baseDescription: "Stratégies de marketing online et réseaux sociaux." },
+  { name: "Bachelor Journalisme", type: "Licence", sector: "Sciences sociales", duration: "3 ans", level: "Bac+3", tuition: "8 500 €/an", rncp: true, baseDescription: "Rédaction, média et communication journalistique." },
+  { name: "MSc Data Science", type: "Master", sector: "Tech & Digital", duration: "2 ans", level: "Bac+5", tuition: "16 000 €/an", rating: 4.8, rncp: true, baseDescription: "Machine learning, statistiques et big data." },
+  { name: "Master Management", type: "Master", sector: "Business & Management", duration: "2 ans", level: "Bac+5", tuition: "14 000 €/an", rating: 4.6, rncp: true, baseDescription: "Management d'entreprise, stratégie et leadership." },
+  { name: "Master Finance", type: "Master", sector: "Finance", duration: "2 ans", level: "Bac+5", tuition: "20 000 €/an", rating: 4.7, rncp: true, baseDescription: "Marchés financiers, audit et contrôle de gestion." },
+  { name: "Master Marketing Digital", type: "Master", sector: "Marketing & Com", duration: "2 ans", level: "Bac+5", tuition: "17 000 €/an", rating: 4.5, rncp: true, baseDescription: "Stratégies numériques et growth marketing." },
+  { name: "MBA Management International", type: "MBA", sector: "Business & Management", duration: "1 an", level: "Bac+5", tuition: "21 000 €/an", rating: 4.6, rncp: true, baseDescription: "Management global, commerce international et leadership." },
+  { name: "MBA Data & IA", type: "MBA", sector: "Tech & Digital", duration: "1 an", level: "Bac+5", tuition: "19 000 €/an", rating: 4.4, rncp: true, baseDescription: "Data science appliquée à l'intelligence artificielle." },
+  { name: "Master Biotechnologies", type: "Master", sector: "Santé & Bio", duration: "2 ans", level: "Bac+5", tuition: "4 000 €/an", rating: 4.5, rncp: true, baseDescription: "Recherche et innovation en biotechnologies." },
+  { name: "Master Droit des Affaires", type: "Master", sector: "Droit", duration: "2 ans", level: "Bac+5", tuition: "Gratuit (public)", rating: 4.5, rncp: true, baseDescription: "Droit des sociétés, contrats et fiscalité." },
+  { name: "Master Architecture", type: "Master", sector: "Architecture", duration: "2 ans", level: "Bac+5", tuition: "Gratuit (public)", rating: 4.4, rncp: true, baseDescription: "Conception architecturale et projet urbain." },
+  { name: "Master Cinema & Audiovisuel", type: "Master", sector: "Audiovisuel", duration: "2 ans", level: "Bac+5", tuition: "6 000 €/an", rating: 4.7, rncp: true, baseDescription: "Production, réalisation et post-production." },
+  { name: "Master Ingénierie Durable", type: "Master", sector: "Environnement", duration: "2 ans", level: "Bac+5", tuition: "3 000 €/an", rating: 4.6, rncp: true, baseDescription: "Transition énergétique et ingénierie environnementale." },
+  { name: "École d'Architecture", type: "École", sector: "Architecture", duration: "5 ans", level: "Bac+5", tuition: "4 000 €/an", rating: 4.3, rncp: true, baseDescription: "Architecture, urbanisme et design d'espace." },
+  { name: "École de Commerce", type: "École", sector: "Business & Management", duration: "5 ans", level: "Bac+5", tuition: "15 000 €/an", rating: 4.7, rncp: true, baseDescription: "Commerce, finance et business international." },
+  { name: "École d'Ingénieurs", type: "École", sector: "Sciences & Ingénierie", duration: "5 ans", level: "Bac+5", tuition: "12 000 €/an", rating: 4.8, rncp: true, baseDescription: "Formation d'ingénieur généraliste et spécialisé." },
 ];
+
+const SCHOOLS = [
+  "Sorbonne Université",
+  "Université Paris-Saclay",
+  "Université de Lyon",
+  "Université de Lille",
+  "Université de Strasbourg",
+  "Université Rennes 1",
+  "Université Grenoble-Alpes",
+  "Université de Bordeaux",
+  "Université d'Aix-Marseille",
+  "Université de Toulouse",
+  "HEC Paris",
+  "ESSEC",
+  "ESCP",
+  "EM Lyon",
+  "EDHEC",
+  "Sciences Po Paris",
+  "Polytechnique",
+  "CentraleSupélec",
+  "Telecom Paris",
+  "École 42",
+  "EPITA",
+  "EPF",
+  "ENS Paris",
+  "ENS Lyon",
+  "ENSA Paris-Malaquais",
+  "La Fémis",
+  "Les Gobelins",
+  "Rubika",
+  "ENVA Maisons-Alfort",
+  "INSPÉ Lyon",
+  "AgroParisTech",
+  "Université de Nantes",
+  "Université de Lorraine",
+  "Université Paris Nanterre",
+  "Université Paris Cité",
+  "Université Lyon 2",
+  "Université Clermont Auvergne",
+  "Université de Nice",
+  "Université de Montpellier",
+];
+
+const CITIES = [
+  "Paris",
+  "Lyon",
+  "Marseille",
+  "Bordeaux",
+  "Toulouse",
+  "Nantes",
+  "Strasbourg",
+  "Lille",
+  "Rennes",
+  "Grenoble",
+  "Nice",
+  "Montpellier",
+  "Dijon",
+  "Nancy",
+  "Aix-en-Provence",
+  "Besançon",
+  "Le Mans",
+  "Clermont-Ferrand",
+  "Metz",
+  "Rouen",
+];
+
+const IMAGE_URLS = [
+  "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80",
+  "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=900&q=80",
+  "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=900&q=80",
+  "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80",
+  "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80",
+];
+
+const TITLE_ADJECTIVES = [
+  "International",
+  "Professionnel",
+  "Avancé",
+  "Stratégique",
+  "Créatif",
+  "Numérique",
+  "Innovation",
+  "& Management",
+  "& Entrepreneuriat",
+  "et Data",
+];
+
+const DESCRIPTION_VARIANTS = [
+  "Axé sur l'emploi et la veille sectorielle.",
+  "Avec des projets réels encadrés par des spécialistes.",
+  "En partenariat avec des entreprises et des associations.",
+  "Une formation pratique qui prépare à l'alternance.",
+  "Orientée vers les métiers de demain.",
+  "Pour développer un profil polyvalent et recherché.",
+  "Avec un accompagnement personnalisé vers l'insertion.",
+  "Accessible après le bac et idéale pour les jeunes motivés.",
+  "Forte d'un réseau d'anciens et de stages intégrés.",
+  "Une spécialisation reconnue au niveau national.",
+];
+
+function generateSeedFormations(): Formation[] {
+  return Array.from({ length: 1000 }, (_, index) => {
+    const template = FORMATION_TEMPLATES[index % FORMATION_TEMPLATES.length];
+    const school = SCHOOLS[index % SCHOOLS.length];
+    const city = CITIES[index % CITIES.length];
+    const rating = parseFloat((3.6 + ((index % 15) * 0.14)).toFixed(1));
+    const imageUrl = index % 4 === 0 ? IMAGE_URLS[index % IMAGE_URLS.length] : undefined;
+    const titleAddon = TITLE_ADJECTIVES[index % TITLE_ADJECTIVES.length];
+    const descriptionAddon = DESCRIPTION_VARIANTS[index % DESCRIPTION_VARIANTS.length];
+    const name = index % 3 === 0 ? `${template.name} ${titleAddon}` : template.name;
+    return {
+      id: String(index + 1),
+      name,
+      school,
+      city,
+      type: template.type,
+      sector: template.sector,
+      duration: template.duration,
+      level: template.level,
+      tuition: template.tuition,
+      rating: Math.min(5, rating),
+      rncp: template.rncp,
+      description: `${template.baseDescription} ${descriptionAddon} Proposé par ${school} à ${city}.`,
+      imageUrl,
+    };
+  });
+}
 
 const STORAGE_KEY = "cursus.formations.v1";
 
@@ -91,20 +243,29 @@ function FormationsPage() {
   const [query, setQuery] = useState("");
   const [sector, setSector] = useState<Sector | "all">("all");
   const [type, setType] = useState<FormationType | "all">("all");
+  const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<Formation | null>(null);
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => { setItems(load()); }, []);
   useEffect(() => { if (items !== SEED) save(items); }, [items]);
+  useEffect(() => { setPage(1); }, [query, sector, type]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return items.filter(f =>
-      (sector === "all" || f.sector === sector) &&
-      (type === "all" || f.type === type) &&
-      (!q || `${f.name} ${f.school} ${f.city} ${f.sector}`.toLowerCase().includes(q))
-    );
+    const terms = q.split(/\s+/).filter(Boolean);
+    return items.filter(f => {
+      if (sector !== "all" && f.sector !== sector) return false;
+      if (type !== "all" && f.type !== type) return false;
+      if (!terms.length) return true;
+      const target = `${f.name} ${f.school} ${f.city} ${f.sector} ${f.type} ${f.level} ${f.tuition} ${f.description}`.toLowerCase();
+      return terms.every(term => target.includes(term));
+    });
   }, [items, query, sector, type]);
+
+  const PER_PAGE = 12;
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const pageItems = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   const handleSave = (f: Formation) => {
     setItems(prev => {
@@ -129,7 +290,7 @@ function FormationsPage() {
           Toutes les formations, en un seul endroit.
         </h1>
         <p className="text-neutral-600 max-w-2xl">
-          Masters, écoles, BUT, BTS et licences. {items.length} formations référencées. Ajoute et modifie les tiennes.
+          Masters, écoles, BUT, BTS et licences. {items.length} formations référencées. Ajoute des formations, édite les fiches et partage une image de chaque cursus.
         </p>
       </section>
 
@@ -177,9 +338,16 @@ function FormationsPage() {
         {filtered.length === 0 && (
           <div className="col-span-full text-center py-16 text-neutral-500 text-sm">Aucune formation ne correspond.</div>
         )}
-        {filtered.map(f => (
+        {pageItems.map(f => (
           <article key={f.id} className="bg-white ring-1 ring-black/5 rounded-2xl p-5 flex flex-col gap-3 hover:ring-brand/30 transition">
-            <div className="flex justify-between items-start gap-2">
+            {f.imageUrl ? (
+            <div className="overflow-hidden rounded-3xl h-44 mb-4">
+              <img src={f.imageUrl} alt={f.name} className="w-full h-full object-cover" />
+            </div>
+          ) : (
+            <div className="h-44 rounded-3xl bg-neutral-100 grid place-items-center text-neutral-400 text-sm mb-4">Aucune image</div>
+          )}
+          <div className="flex justify-between items-start gap-2">
               <span className="text-[10px] uppercase tracking-wider font-semibold text-brand px-2 py-1 bg-brand-light rounded">{f.type}</span>
               <span className="text-xs text-neutral-500">⭐ {f.rating}</span>
             </div>
@@ -206,6 +374,32 @@ function FormationsPage() {
         ))}
       </section>
 
+      {pageCount > 1 && (
+        <section className="flex flex-col items-center gap-3 pt-4">
+          <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-neutral-600">
+            <button
+              onClick={() => setPage(prev => Math.max(1, prev - 1))}
+              disabled={page === 1}
+              className="px-3 py-2 rounded-full ring-1 ring-black/10 bg-white hover:bg-brand/5 disabled:opacity-40"
+            >Précédent</button>
+            {Array.from({ length: pageCount }, (_, index) => index + 1)
+              .filter(pageNumber => pageNumber === 1 || pageNumber === pageCount || Math.abs(pageNumber - page) <= 2)
+              .map(pageNumber => (
+                <button
+                  key={pageNumber}
+                  onClick={() => setPage(pageNumber)}
+                  className={`px-3 py-2 rounded-full ring-1 ring-black/10 ${page === pageNumber ? "bg-brand text-white" : "bg-white hover:bg-brand/5"}`}
+                >{pageNumber}</button>
+              ))}
+            <button
+              onClick={() => setPage(prev => Math.min(pageCount, prev + 1))}
+              disabled={page === pageCount}
+              className="px-3 py-2 rounded-full ring-1 ring-black/10 bg-white hover:bg-brand/5 disabled:opacity-40"
+            >Suivant</button>
+          </div>
+          <p className="text-xs text-neutral-500">Page {page} sur {pageCount} — {filtered.length} résultats</p>
+        </section>
+      )}
       {showForm && (
         <FormationForm
           initial={editing}
@@ -242,6 +436,7 @@ function FormationForm({ initial, onClose, onSave }: { initial: Formation | null
     id: crypto.randomUUID(),
     name: "", school: "", city: "", type: "Master", sector: "Tech & Digital",
     duration: "2 ans", level: "Bac+5", tuition: "", rating: 4.0, rncp: true, description: "",
+    imageUrl: "",
   });
 
   const update = <K extends keyof Formation>(k: K, v: Formation[K]) => setForm(f => ({ ...f, [k]: v }));
@@ -280,6 +475,7 @@ function FormationForm({ initial, onClose, onSave }: { initial: Formation | null
             <Field label="Note /5"><input type="number" min="0" max="5" step="0.1" value={form.rating} onChange={e => update("rating", parseFloat(e.target.value))} className="input" /></Field>
           </div>
           <Field label="Frais"><input value={form.tuition} onChange={e => update("tuition", e.target.value)} className="input" /></Field>
+          <Field label="Image (URL)"><input value={form.imageUrl ?? ""} onChange={e => update("imageUrl", e.target.value)} className="input" placeholder="https://..." /></Field>
           <Field label="Description"><textarea rows={3} value={form.description} onChange={e => update("description", e.target.value)} className="input" /></Field>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={form.rncp} onChange={e => update("rncp", e.target.checked)} /> Reconnu RNCP
@@ -301,5 +497,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span className="block text-xs font-medium text-neutral-600 mb-1">{label}</span>
       {children}
     </label>
+  );
+}
   );
 }
