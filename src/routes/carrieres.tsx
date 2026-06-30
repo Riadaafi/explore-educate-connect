@@ -1,316 +1,305 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/carrieres")({
   head: () => ({
     meta: [
-      { title: "Carrières — Cursus" },
-      { name: "description", content: "Métiers, masters et test d'orientation pour construire ton avenir." },
+      { title: "Formations — Cursus" },
+      { name: "description", content: "Base de masters, écoles et programmes. Recherche, filtre par secteur et ajoute tes propres formations." },
     ],
   }),
-  component: CarrieresPage,
+  component: FormationsPage,
 });
 
-type Job = {
+type FormationType = "Master" | "École" | "BUT" | "Licence" | "BTS" | "MBA";
+type Sector =
+  | "Tech & Digital" | "Business & Management" | "Finance" | "Marketing & Com"
+  | "Design & Création" | "Santé & Bio" | "Sciences & Ingénierie" | "Droit"
+  | "Sciences sociales" | "Lettres & Langues" | "Architecture" | "Audiovisuel"
+  | "Environnement" | "Hôtellerie & Tourisme" | "Sport" | "Enseignement";
+
+type Formation = {
   id: string;
   name: string;
-  salary: string;
-  growth: string;
-  growthPositive: boolean;
-  skills: string[];
-  path: { step: string; detail: string }[];
-  tip: string;
-  expert: string;
+  school: string;
+  city: string;
+  type: FormationType;
+  sector: Sector;
+  duration: string; // ex "2 ans"
+  level: string;    // entry: "Bac+3" -> output "Bac+5"
+  tuition: string;
+  rating: number;   // /5
+  rncp: boolean;    // reconnu RNCP
+  description: string;
 };
 
-const JOBS: Job[] = [
-  {
-    id: "pm",
-    name: "Product Manager",
-    salary: "45k - 65k €",
-    growth: "+12% / an",
-    growthPositive: true,
-    skills: ["Stratégie produit", "Data analytics", "Communication", "Agile"],
-    path: [
-      { step: "Licence", detail: "Commerce, ingénierie ou design (Bac+3)" },
-      { step: "Master", detail: "Management de l'innovation ou MBA produit" },
-      { step: "Stage / Alternance", detail: "12 mois en équipe produit" },
-      { step: "Junior PM", detail: "Première mission sur une feature, montée en autonomie" },
-    ],
-    tip: "Construis un portfolio de cas produits dès la L3 — même fictifs.",
-    expert: "Marie L., Head of Product @ Doctolib",
-  },
-  {
-    id: "ds",
-    name: "Data Scientist",
-    salary: "48k - 70k €",
-    growth: "+18% / an",
-    growthPositive: true,
-    skills: ["Python", "Machine Learning", "Statistiques", "SQL"],
-    path: [
-      { step: "Licence", detail: "Maths, info ou physique (Bac+3)" },
-      { step: "Master", detail: "Data Science, IA ou statistiques appliquées" },
-      { step: "Projets", detail: "Kaggle, GitHub, contributions open source" },
-      { step: "Junior DS", detail: "Mission en entreprise ou cabinet conseil" },
-    ],
-    tip: "Maîtrise les bases stats avant les frameworks à la mode.",
-    expert: "Yacine B., Lead Data @ Criteo",
-  },
-  {
-    id: "ux",
-    name: "UX Researcher",
-    salary: "40k - 58k €",
-    growth: "+8% / an",
-    growthPositive: true,
-    skills: ["Recherche utilisateur", "Tests d'usabilité", "Synthèse", "Empathie"],
-    path: [
-      { step: "Licence", detail: "Sciences humaines, psycho ou design" },
-      { step: "Master", detail: "UX Design, ergonomie ou sociologie appliquée" },
-      { step: "Portfolio", detail: "3-5 études de cas avec méthodologie claire" },
-      { step: "Junior UXR", detail: "Mission en agence puis en produit" },
-    ],
-    tip: "Pratique l'écoute active : la moitié du job est de poser les bonnes questions.",
-    expert: "Sophie M., UX Lead @ BlaBlaCar",
-  },
-  {
-    id: "juriste",
-    name: "Juriste d'affaires",
-    salary: "38k - 52k €",
-    growth: "Stable",
-    growthPositive: false,
-    skills: ["Droit privé", "Anglais juridique", "Négociation", "Rédaction"],
-    path: [
-      { step: "Licence Droit", detail: "Bac+3 généraliste" },
-      { step: "Master 2", detail: "Droit des affaires ou droit international" },
-      { step: "Stages", detail: "Cabinets d'avocats ou direction juridique" },
-      { step: "Juriste junior", detail: "Entreprise ou cabinet, spécialisation progressive" },
-    ],
-    tip: "L'anglais juridique fait toute la différence sur le marché.",
-    expert: "Paul R., DJ @ Capgemini",
-  },
+const SECTORS: Sector[] = [
+  "Tech & Digital", "Business & Management", "Finance", "Marketing & Com",
+  "Design & Création", "Santé & Bio", "Sciences & Ingénierie", "Droit",
+  "Sciences sociales", "Lettres & Langues", "Architecture", "Audiovisuel",
+  "Environnement", "Hôtellerie & Tourisme", "Sport", "Enseignement",
 ];
 
-type Master = { category: string; name: string; school: string };
-const MASTERS: Master[] = [
-  { category: "Tech & Data", name: "Master IA Appliquée", school: "Sorbonne Université" },
-  { category: "Tech & Data", name: "MSc Data Science", school: "Polytechnique" },
-  { category: "Management", name: "MSc International Business", school: "HEC Paris" },
-  { category: "Management", name: "Master Innovation & Entrepreneuriat", school: "ESSEC" },
-  { category: "Design", name: "Master Design Stratégique", school: "ENSCI" },
-  { category: "Design", name: "MSc UX & Service Design", school: "Strate École" },
-  { category: "Droit", name: "Master Droit des Affaires", school: "Assas" },
-  { category: "Droit", name: "Master Droit du Numérique", school: "Paris 1" },
-  { category: "Sciences", name: "Master Biologie Computationnelle", school: "Paris Saclay" },
+const TYPES: FormationType[] = ["Master", "École", "BUT", "Licence", "BTS", "MBA"];
+
+const SEED: Formation[] = [
+  { id: "1", name: "MSc Data Science", school: "Polytechnique", city: "Palaiseau", type: "Master", sector: "Tech & Digital", duration: "2 ans", level: "Bac+5", tuition: "16 000 €/an", rating: 4.8, rncp: true, description: "Programme intensif en machine learning et data engineering." },
+  { id: "2", name: "Grande École", school: "HEC Paris", city: "Jouy-en-Josas", type: "École", sector: "Business & Management", duration: "3 ans", level: "Bac+5", tuition: "21 000 €/an", rating: 4.9, rncp: true, description: "Programme grande école, classé #1 européen." },
+  { id: "3", name: "Master Finance", school: "ESSEC", city: "Cergy", type: "Master", sector: "Finance", duration: "2 ans", level: "Bac+5", tuition: "20 000 €/an", rating: 4.7, rncp: true, description: "Spécialisation marchés financiers et corporate finance." },
+  { id: "4", name: "MBA Marketing Digital", school: "EM Lyon", city: "Lyon", type: "MBA", sector: "Marketing & Com", duration: "1 an", level: "Bac+5", tuition: "18 500 €", rating: 4.5, rncp: true, description: "MBA spécialisé en marketing data-driven et growth." },
+  { id: "5", name: "MSc Computer Science", school: "EPITA", city: "Paris", type: "École", sector: "Tech & Digital", duration: "5 ans", level: "Bac+5", tuition: "9 800 €/an", rating: 4.4, rncp: true, description: "École d'ingénieurs spécialisée en informatique." },
+  { id: "6", name: "BUT Informatique", school: "IUT Lyon 1", city: "Lyon", type: "BUT", sector: "Tech & Digital", duration: "3 ans", level: "Bac+3", tuition: "Gratuit (public)", rating: 4.3, rncp: true, description: "Formation pro courte, alternance possible dès la 2ᵉ année." },
+  { id: "7", name: "BUT MMI", school: "IUT Bordeaux", city: "Bordeaux", type: "BUT", sector: "Design & Création", duration: "3 ans", level: "Bac+3", tuition: "Gratuit (public)", rating: 4.2, rncp: true, description: "Métiers du multimédia et de l'internet : design, dev, com." },
+  { id: "8", name: "Bachelor UX Design", school: "Les Gobelins", city: "Paris", type: "École", sector: "Design & Création", duration: "3 ans", level: "Bac+3", tuition: "8 900 €/an", rating: 4.6, rncp: true, description: "Référence européenne en design d'interaction." },
+  { id: "9", name: "Master Droit des Affaires", school: "Paris 1 Panthéon-Sorbonne", city: "Paris", type: "Master", sector: "Droit", duration: "2 ans", level: "Bac+5", tuition: "Gratuit (public)", rating: 4.5, rncp: true, description: "Droit des sociétés, M&A, contentieux." },
+  { id: "10", name: "PASS / L.AS", school: "Sorbonne Université", city: "Paris", type: "Licence", sector: "Santé & Bio", duration: "1 an", level: "Bac+1", tuition: "Gratuit (public)", rating: 4.0, rncp: true, description: "Parcours d'accès aux études de santé (médecine, pharma, dentaire)." },
+  { id: "11", name: "Diplôme d'Ingénieur", school: "CentraleSupélec", city: "Gif-sur-Yvette", type: "École", sector: "Sciences & Ingénierie", duration: "3 ans", level: "Bac+5", tuition: "2 500 €/an", rating: 4.9, rncp: true, description: "Ingénieur généraliste sur un large spectre scientifique." },
+  { id: "12", name: "Master Architecture", school: "ENSA Paris-Malaquais", city: "Paris", type: "Master", sector: "Architecture", duration: "2 ans", level: "Bac+5", tuition: "Gratuit (public)", rating: 4.4, rncp: true, description: "DEA permettant d'exercer en tant qu'architecte." },
+  { id: "13", name: "Master Cinéma", school: "La Fémis", city: "Paris", type: "École", sector: "Audiovisuel", duration: "4 ans", level: "Bac+5", tuition: "500 €/an", rating: 4.8, rncp: true, description: "École nationale supérieure des métiers de l'image et du son." },
+  { id: "14", name: "Master Sciences Po", school: "Sciences Po Paris", city: "Paris", type: "Master", sector: "Sciences sociales", duration: "2 ans", level: "Bac+5", tuition: "14 000 €/an", rating: 4.7, rncp: true, description: "13 masters : affaires publiques, journalisme, droit, etc." },
+  { id: "15", name: "BTS Tourisme", school: "CFA Tourisme", city: "Marseille", type: "BTS", sector: "Hôtellerie & Tourisme", duration: "2 ans", level: "Bac+2", tuition: "Gratuit (alternance)", rating: 3.9, rncp: true, description: "Formation pro courte en gestion touristique." },
+  { id: "16", name: "Licence STAPS", school: "Université Paris-Saclay", city: "Orsay", type: "Licence", sector: "Sport", duration: "3 ans", level: "Bac+3", tuition: "Gratuit (public)", rating: 4.1, rncp: true, description: "Sciences et techniques des activités physiques et sportives." },
+  { id: "17", name: "Master MEEF", school: "INSPÉ Lyon", city: "Lyon", type: "Master", sector: "Enseignement", duration: "2 ans", level: "Bac+5", tuition: "Gratuit (public)", rating: 4.0, rncp: true, description: "Métiers de l'enseignement, de l'éducation et de la formation." },
+  { id: "18", name: "Master Environnement", school: "AgroParisTech", city: "Palaiseau", type: "Master", sector: "Environnement", duration: "2 ans", level: "Bac+5", tuition: "2 500 €/an", rating: 4.6, rncp: true, description: "Sciences et ingénierie de l'environnement et du vivant." },
+  { id: "19", name: "Master LLCE Anglais", school: "Paris Nanterre", city: "Nanterre", type: "Master", sector: "Lettres & Langues", duration: "2 ans", level: "Bac+5", tuition: "Gratuit (public)", rating: 4.2, rncp: true, description: "Langues, littératures et civilisations étrangères." },
+  { id: "20", name: "MSc Cybersecurity", school: "Telecom Paris", city: "Palaiseau", type: "Master", sector: "Tech & Digital", duration: "2 ans", level: "Bac+5", tuition: "14 000 €/an", rating: 4.7, rncp: true, description: "Spécialisation en cybersécurité offensive et défensive." },
+  { id: "21", name: "Bachelor Communication", school: "CELSA Sorbonne", city: "Neuilly", type: "Licence", sector: "Marketing & Com", duration: "3 ans", level: "Bac+3", tuition: "Gratuit (public)", rating: 4.5, rncp: true, description: "Référence en sciences de l'information et de la communication." },
+  { id: "22", name: "Diplôme Vétérinaire", school: "ENVA Maisons-Alfort", city: "Maisons-Alfort", type: "École", sector: "Santé & Bio", duration: "6 ans", level: "Bac+6", tuition: "5 000 €/an", rating: 4.6, rncp: true, description: "École nationale vétérinaire d'Alfort." },
+  { id: "23", name: "Master Game Design", school: "Rubika", city: "Valenciennes", type: "École", sector: "Audiovisuel", duration: "5 ans", level: "Bac+5", tuition: "8 200 €/an", rating: 4.3, rncp: true, description: "Game design, programmation et art pour le jeu vidéo." },
+  { id: "24", name: "Master Économie", school: "PSE - Paris School of Economics", city: "Paris", type: "Master", sector: "Finance", duration: "2 ans", level: "Bac+5", tuition: "Gratuit (public)", rating: 4.8, rncp: true, description: "Top mondial en recherche économique." },
 ];
 
-const QUIZ: { q: string; options: { label: string; tag: keyof typeof TAG_TO_JOB }[] }[] = [
-  {
-    q: "Tu préfères passer ta journée à...",
-    options: [
-      { label: "Analyser des chiffres et trouver des patterns", tag: "data" },
-      { label: "Comprendre les besoins des utilisateurs", tag: "human" },
-      { label: "Construire une stratégie business", tag: "biz" },
-      { label: "Décortiquer des textes et contrats", tag: "law" },
-    ],
-  },
-  {
-    q: "Quel environnement t'attire le plus ?",
-    options: [
-      { label: "Une startup tech en croissance", tag: "data" },
-      { label: "Une agence créative", tag: "human" },
-      { label: "Un grand groupe international", tag: "biz" },
-      { label: "Un cabinet ou une institution", tag: "law" },
-    ],
-  },
-  {
-    q: "Tu es naturellement plus...",
-    options: [
-      { label: "Logique et rigoureux", tag: "data" },
-      { label: "Empathique et observateur", tag: "human" },
-      { label: "Visionnaire et négociateur", tag: "biz" },
-      { label: "Méthodique et précis", tag: "law" },
-    ],
-  },
-];
+const STORAGE_KEY = "cursus.formations.v1";
 
-const TAG_TO_JOB = { data: "ds", human: "ux", biz: "pm", law: "juriste" } as const;
+function load(): Formation[] {
+  if (typeof window === "undefined") return SEED;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return SEED;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length ? parsed : SEED;
+  } catch { return SEED; }
+}
 
-function CarrieresPage() {
-  const [openJob, setOpenJob] = useState<string | null>(null);
-  const [showQuiz, setShowQuiz] = useState(false);
-  const [answers, setAnswers] = useState<string[]>([]);
-  const [masterCat, setMasterCat] = useState<string>("Tous");
+function save(data: Formation[]) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
 
-  const masterCats = useMemo(() => ["Tous", ...Array.from(new Set(MASTERS.map(m => m.category)))], []);
-  const filteredMasters = masterCat === "Tous" ? MASTERS : MASTERS.filter(m => m.category === masterCat);
+function FormationsPage() {
+  const [items, setItems] = useState<Formation[]>(SEED);
+  const [query, setQuery] = useState("");
+  const [sector, setSector] = useState<Sector | "all">("all");
+  const [type, setType] = useState<FormationType | "all">("all");
+  const [editing, setEditing] = useState<Formation | null>(null);
+  const [showForm, setShowForm] = useState(false);
 
-  const quizResult = useMemo(() => {
-    if (answers.length < QUIZ.length) return null;
-    const tally: Record<string, number> = {};
-    answers.forEach(a => { tally[a] = (tally[a] ?? 0) + 1; });
-    const top = Object.entries(tally).sort((a, b) => b[1] - a[1])[0][0];
-    return JOBS.find(j => j.id === TAG_TO_JOB[top as keyof typeof TAG_TO_JOB]);
-  }, [answers]);
+  useEffect(() => { setItems(load()); }, []);
+  useEffect(() => { if (items !== SEED) save(items); }, [items]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return items.filter(f =>
+      (sector === "all" || f.sector === sector) &&
+      (type === "all" || f.type === type) &&
+      (!q || `${f.name} ${f.school} ${f.city} ${f.sector}`.toLowerCase().includes(q))
+    );
+  }, [items, query, sector, type]);
+
+  const handleSave = (f: Formation) => {
+    setItems(prev => {
+      const exists = prev.some(x => x.id === f.id);
+      const next = exists ? prev.map(x => x.id === f.id ? f : x) : [f, ...prev];
+      save(next);
+      return next;
+    });
+    setShowForm(false); setEditing(null);
+  };
+
+  const handleDelete = (id: string) => {
+    if (!confirm("Supprimer cette formation ?")) return;
+    setItems(prev => { const next = prev.filter(x => x.id !== id); save(next); return next; });
+  };
 
   return (
-    <main className="max-w-6xl mx-auto py-12 px-6 space-y-20">
-      {/* Header */}
-      <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-        <div className="space-y-4">
-          <h1 className="font-display text-4xl font-semibold leading-tight text-balance">Préparez l'avenir.</h1>
-          <p className="text-sm text-neutral-600 max-w-[56ch] text-pretty">
-            Explorez les métiers en forte croissance, découvrez les masters qui y mènent et trouvez votre voie.
-          </p>
-        </div>
-        <button
-          onClick={() => { setShowQuiz(true); setAnswers([]); }}
-          className="px-6 py-3 bg-brand text-white text-sm font-medium rounded-lg ring-1 ring-brand hover:brightness-110"
-        >
-          Passer le test d'orientation
-        </button>
+    <main className="max-w-6xl mx-auto py-12 px-6 space-y-10">
+      <section className="space-y-3">
+        <span className="text-[11px] uppercase tracking-[0.2em] text-brand font-semibold">Formations</span>
+        <h1 className="font-display text-4xl md:text-5xl font-semibold leading-tight">
+          Toutes les formations, en un seul endroit.
+        </h1>
+        <p className="text-neutral-600 max-w-2xl">
+          Masters, écoles, BUT, BTS et licences. {items.length} formations référencées. Ajoute et modifie les tiennes.
+        </p>
       </section>
 
-      {/* Jobs list */}
-      <section className="space-y-4">
-        <h2 className="font-display font-semibold text-xl">Métiers porteurs</h2>
-        <div className="bg-ui-bg ring-1 ring-black/5 rounded-2xl overflow-hidden divide-y divide-black/5">
-          {JOBS.map(job => {
-            const open = openJob === job.id;
-            return (
-              <div key={job.id}>
-                <button
-                  onClick={() => setOpenJob(open ? null : job.id)}
-                  className="w-full px-6 py-5 flex flex-col md:flex-row md:items-center justify-between gap-3 text-left hover:bg-neutral-100/50 transition-colors"
-                >
-                  <div>
-                    <p className="font-medium">{job.name}</p>
-                    <p className="text-xs text-neutral-500 mt-0.5">Croissance : <span className={job.growthPositive ? "text-brand font-medium" : "text-neutral-500"}>{job.growth}</span></p>
-                  </div>
-                  <div className="flex items-center gap-6">
-                    <span className="text-sm text-neutral-700 font-medium">{job.salary}</span>
-                    <span className={`text-xs text-neutral-400 transition-transform ${open ? "rotate-180" : ""}`}>▼</span>
-                  </div>
-                </button>
-                {open && (
-                  <div className="px-6 pb-6 pt-2 grid md:grid-cols-2 gap-8 bg-white/50 animate-fade-in">
-                    <div className="space-y-4">
-                      <div>
-                        <h4 className="text-[11px] uppercase tracking-wider text-neutral-500 font-semibold mb-2">Compétences clés</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {job.skills.map(s => (
-                            <span key={s} className="text-xs px-3 py-1 bg-brand-light text-brand rounded-full font-medium">{s}</span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="p-4 bg-ui-bg rounded-xl ring-1 ring-black/5">
-                        <p className="text-[11px] uppercase tracking-wider text-brand font-semibold mb-1">Conseil d'expert</p>
-                        <p className="text-sm text-neutral-700 italic">"{job.tip}"</p>
-                        <p className="text-xs text-neutral-500 mt-2">— {job.expert}</p>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="text-[11px] uppercase tracking-wider text-neutral-500 font-semibold mb-3">Parcours étape par étape</h4>
-                      <ol className="space-y-3">
-                        {job.path.map((p, i) => (
-                          <li key={i} className="flex gap-3">
-                            <span className="size-6 shrink-0 rounded-full bg-brand text-white text-xs font-semibold grid place-items-center">{i + 1}</span>
-                            <div>
-                              <p className="text-sm font-medium">{p.step}</p>
-                              <p className="text-xs text-neutral-500">{p.detail}</p>
-                            </div>
-                          </li>
-                        ))}
-                      </ol>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+      {/* Search + filters */}
+      <section className="bg-ui-bg ring-1 ring-black/5 rounded-2xl p-5 space-y-4">
+        <div className="flex flex-col md:flex-row gap-3">
+          <input
+            type="search"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="🔍 Rechercher une formation, école ou ville..."
+            className="flex-1 px-4 py-3 bg-white rounded-xl ring-1 ring-black/5 text-sm focus:ring-brand outline-none"
+          />
+          <button
+            onClick={() => { setEditing(null); setShowForm(true); }}
+            className="px-5 py-3 bg-brand text-white rounded-xl text-sm font-medium hover:brightness-110 whitespace-nowrap"
+          >
+            + Ajouter
+          </button>
         </div>
-      </section>
-
-      {/* Masters */}
-      <section className="space-y-4">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <h2 className="font-display font-semibold text-xl">Tous les masters</h2>
-          <div className="flex gap-2 flex-wrap">
-            {masterCats.map(c => (
-              <button
-                key={c}
-                onClick={() => setMasterCat(c)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-full ring-1 transition-colors ${
-                  masterCat === c ? "bg-brand text-white ring-brand" : "bg-ui-bg ring-black/5 hover:bg-neutral-200"
-                }`}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
+        <div className="flex flex-wrap gap-2">
+          <FilterChip active={type === "all"} onClick={() => setType("all")} label="Tous types" />
+          {TYPES.map(t => (
+            <FilterChip key={t} active={type === t} onClick={() => setType(t)} label={t} />
+          ))}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {filteredMasters.map((m, i) => (
-            <a
-              key={i}
-              href="#"
-              className="p-4 bg-white ring-1 ring-black/5 rounded-xl flex items-center justify-between hover:ring-brand/30 transition group"
-            >
-              <div className="space-y-1 min-w-0">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-brand">{m.category}</span>
-                <p className="font-medium text-sm truncate">{m.name}</p>
-                <p className="text-xs text-neutral-500 truncate">{m.school}</p>
-              </div>
-              <span className="text-neutral-300 group-hover:text-brand group-hover:translate-x-1 transition">→</span>
-            </a>
+        <div className="flex flex-wrap gap-2 pt-1 border-t border-black/5">
+          <FilterChip active={sector === "all"} onClick={() => setSector("all")} label="Tous secteurs" />
+          {SECTORS.map(s => (
+            <FilterChip key={s} active={sector === s} onClick={() => setSector(s)} label={s} />
           ))}
         </div>
       </section>
 
-      {/* Quiz modal */}
-      {showQuiz && (
-        <div className="fixed inset-0 z-50 bg-black/50 grid place-items-center p-4 animate-fade-in">
-          <div className="bg-surface rounded-3xl p-8 max-w-lg w-full ring-1 ring-black/10 shadow-2xl">
-            {!quizResult ? (
-              <>
-                <div className="flex justify-between items-center mb-6">
-                  <span className="text-xs text-neutral-500">Question {answers.length + 1} / {QUIZ.length}</span>
-                  <button onClick={() => setShowQuiz(false)} className="text-neutral-400 hover:text-text-main">✕</button>
-                </div>
-                <div className="h-1 bg-neutral-200 rounded-full overflow-hidden mb-6">
-                  <div className="h-full bg-brand transition-all" style={{ width: `${(answers.length / QUIZ.length) * 100}%` }} />
-                </div>
-                <h3 className="font-display text-xl font-semibold mb-6">{QUIZ[answers.length].q}</h3>
-                <div className="space-y-2">
-                  {QUIZ[answers.length].options.map(opt => (
-                    <button
-                      key={opt.label}
-                      onClick={() => setAnswers([...answers, opt.tag])}
-                      className="w-full text-left p-4 bg-ui-bg rounded-xl ring-1 ring-black/5 hover:ring-brand hover:bg-brand-light transition"
-                    >
-                      <span className="text-sm font-medium">{opt.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="text-center space-y-4">
-                <p className="text-xs uppercase tracking-wider text-brand font-semibold">Ton résultat</p>
-                <h3 className="font-display text-3xl font-semibold">{quizResult.name}</h3>
-                <p className="text-sm text-neutral-600">{quizResult.tip}</p>
-                <div className="flex flex-wrap gap-2 justify-center pt-2">
-                  {quizResult.skills.map(s => (
-                    <span key={s} className="text-xs px-3 py-1 bg-brand-light text-brand rounded-full font-medium">{s}</span>
-                  ))}
-                </div>
-                <div className="flex gap-3 pt-4">
-                  <button onClick={() => { setAnswers([]); }} className="flex-1 py-2.5 ring-1 ring-black/10 rounded-lg text-sm font-medium hover:bg-ui-bg">Recommencer</button>
-                  <button onClick={() => { setShowQuiz(false); setOpenJob(quizResult.id); }} className="flex-1 py-2.5 bg-brand text-white rounded-lg text-sm font-medium hover:brightness-110">Voir le métier</button>
-                </div>
+      {/* Metrics */}
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Stat label="Formations affichées" value={filtered.length.toString()} />
+        <Stat label="Écoles uniques" value={new Set(filtered.map(f => f.school)).size.toString()} />
+        <Stat label="Villes" value={new Set(filtered.map(f => f.city)).size.toString()} />
+        <Stat label="Note moyenne" value={filtered.length ? (filtered.reduce((a, f) => a + f.rating, 0) / filtered.length).toFixed(1) : "—"} />
+      </section>
+
+      {/* Grid */}
+      <section className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filtered.length === 0 && (
+          <div className="col-span-full text-center py-16 text-neutral-500 text-sm">Aucune formation ne correspond.</div>
+        )}
+        {filtered.map(f => (
+          <article key={f.id} className="bg-white ring-1 ring-black/5 rounded-2xl p-5 flex flex-col gap-3 hover:ring-brand/30 transition">
+            <div className="flex justify-between items-start gap-2">
+              <span className="text-[10px] uppercase tracking-wider font-semibold text-brand px-2 py-1 bg-brand-light rounded">{f.type}</span>
+              <span className="text-xs text-neutral-500">⭐ {f.rating}</span>
+            </div>
+            <div>
+              <h3 className="font-display font-semibold text-base leading-tight">{f.name}</h3>
+              <p className="text-sm text-neutral-600 mt-1">{f.school}</p>
+              <p className="text-xs text-neutral-400">{f.city}</p>
+            </div>
+            <p className="text-xs text-neutral-600 line-clamp-2">{f.description}</p>
+            <div className="flex flex-wrap gap-1 text-[11px]">
+              <span className="px-2 py-0.5 bg-neutral-100 rounded-full">{f.sector}</span>
+              <span className="px-2 py-0.5 bg-neutral-100 rounded-full">{f.duration}</span>
+              <span className="px-2 py-0.5 bg-neutral-100 rounded-full">{f.level}</span>
+              {f.rncp && <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full">RNCP</span>}
+            </div>
+            <div className="flex justify-between items-center pt-3 border-t border-black/5 text-xs">
+              <span className="text-neutral-500">{f.tuition}</span>
+              <div className="flex gap-2">
+                <button onClick={() => { setEditing(f); setShowForm(true); }} className="text-neutral-500 hover:text-brand">✏️</button>
+                <button onClick={() => handleDelete(f.id)} className="text-neutral-500 hover:text-red-500">🗑</button>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+          </article>
+        ))}
+      </section>
+
+      {showForm && (
+        <FormationForm
+          initial={editing}
+          onClose={() => { setShowForm(false); setEditing(null); }}
+          onSave={handleSave}
+        />
       )}
     </main>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-white ring-1 ring-black/5 rounded-xl p-4">
+      <div className="text-2xl font-display font-semibold text-brand">{value}</div>
+      <div className="text-xs text-neutral-500 mt-1">{label}</div>
+    </div>
+  );
+}
+
+function FilterChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+        active ? "bg-brand text-white" : "bg-white text-neutral-600 ring-1 ring-black/5 hover:ring-brand"
+      }`}
+    >{label}</button>
+  );
+}
+
+function FormationForm({ initial, onClose, onSave }: { initial: Formation | null; onClose: () => void; onSave: (f: Formation) => void }) {
+  const [form, setForm] = useState<Formation>(initial ?? {
+    id: crypto.randomUUID(),
+    name: "", school: "", city: "", type: "Master", sector: "Tech & Digital",
+    duration: "2 ans", level: "Bac+5", tuition: "", rating: 4.0, rncp: true, description: "",
+  });
+
+  const update = <K extends keyof Formation>(k: K, v: Formation[K]) => setForm(f => ({ ...f, [k]: v }));
+
+  return (
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 grid place-items-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-5">
+          <h3 className="font-display text-xl font-semibold">{initial ? "Modifier" : "Ajouter"} une formation</h3>
+          <button onClick={onClose} className="text-neutral-400 hover:text-neutral-700">✕</button>
+        </div>
+        <form
+          onSubmit={e => { e.preventDefault(); if (!form.name || !form.school) return; onSave(form); }}
+          className="grid gap-3"
+        >
+          <Field label="Nom de la formation"><input required value={form.name} onChange={e => update("name", e.target.value)} className="input" /></Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="École / Université"><input required value={form.school} onChange={e => update("school", e.target.value)} className="input" /></Field>
+            <Field label="Ville"><input value={form.city} onChange={e => update("city", e.target.value)} className="input" /></Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Type">
+              <select value={form.type} onChange={e => update("type", e.target.value as FormationType)} className="input">
+                {TYPES.map(t => <option key={t}>{t}</option>)}
+              </select>
+            </Field>
+            <Field label="Secteur">
+              <select value={form.sector} onChange={e => update("sector", e.target.value as Sector)} className="input">
+                {SECTORS.map(s => <option key={s}>{s}</option>)}
+              </select>
+            </Field>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <Field label="Durée"><input value={form.duration} onChange={e => update("duration", e.target.value)} className="input" /></Field>
+            <Field label="Niveau"><input value={form.level} onChange={e => update("level", e.target.value)} className="input" /></Field>
+            <Field label="Note /5"><input type="number" min="0" max="5" step="0.1" value={form.rating} onChange={e => update("rating", parseFloat(e.target.value))} className="input" /></Field>
+          </div>
+          <Field label="Frais"><input value={form.tuition} onChange={e => update("tuition", e.target.value)} className="input" /></Field>
+          <Field label="Description"><textarea rows={3} value={form.description} onChange={e => update("description", e.target.value)} className="input" /></Field>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={form.rncp} onChange={e => update("rncp", e.target.checked)} /> Reconnu RNCP
+          </label>
+          <div className="flex justify-end gap-2 pt-3">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm rounded-lg ring-1 ring-black/10 hover:bg-neutral-50">Annuler</button>
+            <button type="submit" className="px-4 py-2 text-sm bg-brand text-white rounded-lg hover:brightness-110">Enregistrer</button>
+          </div>
+        </form>
+        <style>{`.input{width:100%;padding:.55rem .75rem;background:#fafaf9;border-radius:.5rem;border:1px solid rgba(0,0,0,.08);font-size:.875rem;outline:none}.input:focus{border-color:#0d9488}`}</style>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="block text-xs font-medium text-neutral-600 mb-1">{label}</span>
+      {children}
+    </label>
   );
 }
