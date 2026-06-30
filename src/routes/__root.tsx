@@ -90,7 +90,7 @@ function NavBar() {
           Cursus.
         </Link>
         <div className="flex gap-8">
-          <Link to="/" className={linkCls} activeProps={{ className: activeCls }} activeOptions={{ exact: true }}>Cours</Link>
+          <Link to="/" className={linkCls} activeProps={{ className: activeCls }} activeOptions={{ exact: true }}>Orientation</Link>
           <Link to="/reseau" className={linkCls} activeProps={{ className: activeCls }}>Réseau</Link>
           <Link to="/carrieres" className={linkCls} activeProps={{ className: activeCls }}>Carrières</Link>
           <Link to="/profil" className={linkCls} activeProps={{ className: activeCls }}>Profil</Link>

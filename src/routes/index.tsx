@@ -4,131 +4,235 @@ import { useMemo, useState } from "react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Cours — Cursus" },
-      { name: "description", content: "Explore les cours par catégorie : Tech, Design, Business, Droit, Sciences." },
+      { title: "Orientation — Cursus" },
+      { name: "description", content: "Trouve ta voie : questionnaire d'orientation, spécialités, débouchés, licence, BUT, CAP, IUT." },
     ],
   }),
-  component: CoursPage,
+  component: OrientationPage,
 });
 
-type Course = {
-  id: string;
-  title: string;
-  desc: string;
-  category: "Tech" | "Design" | "Business" | "Droit" | "Sciences";
-  rating: number;
-  hours: number;
-  students: number;
-  gradient: string;
+type Profile = "scientifique" | "litteraire" | "eco" | "techno" | "artistique";
+
+const PROFILE_LABELS: Record<Profile, string> = {
+  scientifique: "Profil Scientifique",
+  litteraire: "Profil Littéraire & Humanités",
+  eco: "Profil Économique & Social",
+  techno: "Profil Technologique",
+  artistique: "Profil Artistique & Créatif",
 };
 
-const COURSES: Course[] = [
-  { id: "1", title: "Design de Systèmes", desc: "Apprenez à construire des interfaces cohérentes et scalables.", category: "Design", rating: 4.9, hours: 12, students: 840, gradient: "from-teal-200 to-emerald-400" },
-  { id: "2", title: "Algorithmique Avancée", desc: "Maîtrisez les structures de données complexes et l'optimisation.", category: "Tech", rating: 4.7, hours: 24, students: 1240, gradient: "from-indigo-200 to-blue-400" },
-  { id: "3", title: "Droit des Affaires", desc: "Les fondamentaux du droit commercial et des contrats.", category: "Droit", rating: 4.6, hours: 30, students: 620, gradient: "from-amber-200 to-orange-400" },
-  { id: "4", title: "Stratégie SaaS", desc: "Modèles économiques, GTM et croissance d'un produit logiciel.", category: "Business", rating: 4.8, hours: 18, students: 1980, gradient: "from-rose-200 to-pink-400" },
-  { id: "5", title: "Biologie Cellulaire", desc: "Plongée dans les mécanismes du vivant à l'échelle cellulaire.", category: "Sciences", rating: 4.5, hours: 22, students: 410, gradient: "from-lime-200 to-green-400" },
-  { id: "6", title: "Machine Learning", desc: "De la régression linéaire aux réseaux de neurones profonds.", category: "Tech", rating: 4.9, hours: 36, students: 2150, gradient: "from-cyan-200 to-sky-400" },
-  { id: "7", title: "Branding & Identité", desc: "Construire une marque mémorable et un système visuel.", category: "Design", rating: 4.7, hours: 14, students: 720, gradient: "from-fuchsia-200 to-purple-400" },
-  { id: "8", title: "Droit Constitutionnel", desc: "Institutions, pouvoirs et libertés fondamentales.", category: "Droit", rating: 4.4, hours: 28, students: 540, gradient: "from-stone-200 to-stone-400" },
-  { id: "9", title: "Physique Quantique", desc: "Introduction accessible aux principes fondateurs.", category: "Sciences", rating: 4.8, hours: 26, students: 380, gradient: "from-violet-200 to-indigo-400" },
+const QUIZ: { q: string; options: { label: string; tag: Profile }[] }[] = [
+  {
+    q: "Quelle matière te passionne le plus au lycée ?",
+    options: [
+      { label: "Maths, Physique ou SVT", tag: "scientifique" },
+      { label: "Français, Philo ou Langues", tag: "litteraire" },
+      { label: "SES, Histoire-Géo", tag: "eco" },
+      { label: "Techno, Informatique, Atelier", tag: "techno" },
+      { label: "Arts plastiques, Musique, Cinéma", tag: "artistique" },
+    ],
+  },
+  {
+    q: "Comment préfères-tu apprendre ?",
+    options: [
+      { label: "En résolvant des problèmes logiques", tag: "scientifique" },
+      { label: "En lisant et en débattant", tag: "litteraire" },
+      { label: "En analysant l'actualité et la société", tag: "eco" },
+      { label: "En manipulant et fabriquant", tag: "techno" },
+      { label: "En créant et en imaginant", tag: "artistique" },
+    ],
+  },
+  {
+    q: "Ton métier idéal ressemble plutôt à...",
+    options: [
+      { label: "Chercheur, ingénieur, médecin", tag: "scientifique" },
+      { label: "Journaliste, prof, juriste", tag: "litteraire" },
+      { label: "Manager, économiste, RH", tag: "eco" },
+      { label: "Technicien, développeur, mécanicien", tag: "techno" },
+      { label: "Designer, artiste, architecte", tag: "artistique" },
+    ],
+  },
+  {
+    q: "Tu préfères travailler...",
+    options: [
+      { label: "Seul·e sur un problème complexe", tag: "scientifique" },
+      { label: "En équipe sur des idées", tag: "litteraire" },
+      { label: "En relation avec des clients", tag: "eco" },
+      { label: "Avec tes mains, sur le terrain", tag: "techno" },
+      { label: "Sur un projet personnel créatif", tag: "artistique" },
+    ],
+  },
+  {
+    q: "Après le bac, tu te vois plutôt...",
+    options: [
+      { label: "Dans une longue formation (Bac+5/+8)", tag: "scientifique" },
+      { label: "À l'université, en humanités", tag: "litteraire" },
+      { label: "En école de commerce / IEP", tag: "eco" },
+      { label: "En BUT, BTS ou alternance", tag: "techno" },
+      { label: "En école d'art ou d'architecture", tag: "artistique" },
+    ],
+  },
 ];
 
-const CATEGORIES = ["Tous", "Tech", "Design", "Business", "Droit", "Sciences"] as const;
+type Recommendation = {
+  spes: string[];
+  debouches: string[];
+  licences: string[];
+  buts: string[];
+  caps: string[];
+  iuts: string[];
+};
 
-function CoursPage() {
-  const [query, setQuery] = useState("");
-  const [cat, setCat] = useState<(typeof CATEGORIES)[number]>("Tous");
-  const [enrolled, setEnrolled] = useState<Set<string>>(new Set());
+const RECOS: Record<Profile, Recommendation> = {
+  scientifique: {
+    spes: ["Mathématiques", "Physique-Chimie", "SVT", "NSI (informatique)", "Maths expertes"],
+    debouches: ["Ingénieur", "Médecin", "Chercheur", "Data scientist", "Pharmacien", "Vétérinaire"],
+    licences: ["Licence Mathématiques", "Licence Physique", "Licence Informatique", "Licence SVT", "PASS / L.AS (santé)"],
+    buts: ["BUT Informatique", "BUT Génie Biologique", "BUT Mesures Physiques", "BUT Chimie"],
+    caps: ["CAP Électricien", "CAP Maintenance des Véhicules"],
+    iuts: ["IUT Orsay", "IUT Grenoble", "IUT Lyon 1", "IUT Toulouse"],
+  },
+  litteraire: {
+    spes: ["HLP (Humanités, Litt., Philo)", "LLCE (Langues)", "Histoire-Géo / Géopolitique", "SES", "Arts"],
+    debouches: ["Professeur", "Journaliste", "Avocat", "Traducteur", "Éditeur", "Diplomate"],
+    licences: ["Licence Lettres modernes", "Licence Droit", "Licence LLCE Anglais", "Licence Histoire", "Licence Philo"],
+    buts: ["BUT Information-Communication", "BUT Carrières Juridiques", "BUT Carrières Sociales"],
+    caps: ["CAP Accompagnant éducatif petite enfance"],
+    iuts: ["IUT Bordeaux Montaigne", "IUT Paris Descartes", "IUT Tours"],
+  },
+  eco: {
+    spes: ["SES", "Mathématiques", "HGGSP", "LLCE Anglais", "Maths complémentaires"],
+    debouches: ["Manager", "Économiste", "Chargé de marketing", "Banquier", "Consultant", "RH"],
+    licences: ["Licence Économie-Gestion", "Licence AES", "Licence Droit", "Bachelor École de commerce", "Sciences Po"],
+    buts: ["BUT GEA (Gestion)", "BUT TC (Techniques de Commercialisation)", "BUT GACO", "BUT Carrières Juridiques"],
+    caps: ["CAP Employé de commerce", "CAP Vente"],
+    iuts: ["IUT Sceaux", "IUT Aix-Marseille", "IUT Lille", "IUT Nantes"],
+  },
+  techno: {
+    spes: ["NSI", "Sciences de l'Ingénieur", "Physique-Chimie", "Mathématiques", "STI2D (filière techno)"],
+    debouches: ["Développeur", "Technicien réseaux", "Mécanicien", "Électronicien", "Chef de chantier"],
+    licences: ["Licence Informatique", "Licence MIASHS", "Licence Pro Industrie"],
+    buts: ["BUT Informatique", "BUT GEII (Électrique)", "BUT GMP (Mécanique)", "BUT Réseaux & Télécoms", "BUT Génie Civil"],
+    caps: ["CAP Électricien", "CAP Menuisier", "CAP Maintenance véhicules", "CAP Plombier-chauffagiste"],
+    iuts: ["IUT Cachan", "IUT Lyon 1", "IUT Nantes", "IUT Grenoble", "IUT Belfort-Montbéliard"],
+  },
+  artistique: {
+    spes: ["Arts (plastiques, théâtre, cinéma...)", "HLP", "LLCE", "HGGSP", "Numérique & Sciences"],
+    debouches: ["Designer", "Architecte", "Réalisateur", "Graphiste", "Game designer", "Photographe"],
+    licences: ["Licence Arts plastiques", "Licence Cinéma", "Licence Design", "Prépa MANAA / Bachelor Design"],
+    buts: ["BUT MMI (Métiers du Multimédia et de l'Internet)", "BUT Information-Communication"],
+    caps: ["CAP Ébéniste", "CAP Métiers de la mode", "CAP Photographe", "CAP Arts du bois"],
+    iuts: ["IUT Bordeaux MMI", "IUT Champs-sur-Marne MMI", "IUT Velizy MMI"],
+  },
+};
 
-  const filtered = useMemo(() => {
-    return COURSES.filter(c => {
-      const matchCat = cat === "Tous" || c.category === cat;
-      const matchQ = query.trim() === "" || c.title.toLowerCase().includes(query.toLowerCase()) || c.desc.toLowerCase().includes(query.toLowerCase());
-      return matchCat && matchQ;
-    });
-  }, [query, cat]);
+function OrientationPage() {
+  const [answers, setAnswers] = useState<Profile[]>([]);
+  const [showResult, setShowResult] = useState(false);
 
-  const toggle = (id: string) => {
-    setEnrolled(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
+  const result = useMemo<Profile | null>(() => {
+    if (answers.length === 0) return null;
+    const tally: Record<string, number> = {};
+    answers.forEach(a => { tally[a] = (tally[a] ?? 0) + 1; });
+    return Object.entries(tally).sort((a, b) => b[1] - a[1])[0][0] as Profile;
+  }, [answers]);
+
+  const reco = result ? RECOS[result] : null;
+  const done = answers.length >= QUIZ.length;
+  const current = QUIZ[answers.length];
+
+  const reset = () => { setAnswers([]); setShowResult(false); };
 
   return (
-    <main className="max-w-6xl mx-auto py-12 px-6">
-      <section className="space-y-12">
-        <div className="space-y-4">
-          <h1 className="font-display text-4xl font-semibold leading-tight text-balance">Apprendre sans limites.</h1>
-          <p className="text-neutral-600 max-w-[60ch]">Une bibliothèque collaborative façon Wikipédia, organisée par les étudiants pour les étudiants.</p>
-          <div className="flex flex-wrap gap-3 items-center pt-2">
-            <div className="relative flex-1 min-w-[300px]">
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                type="text"
-                placeholder="Rechercher un cours..."
-                className="w-full h-11 pl-4 pr-10 bg-ui-bg ring-1 ring-black/5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand/40"
-              />
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              {CATEGORIES.map(c => (
-                <button
-                  key={c}
-                  onClick={() => setCat(c)}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg ring-1 transition-colors ${
-                    cat === c ? "bg-brand text-white ring-brand" : "bg-ui-bg ring-black/5 hover:bg-neutral-200"
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map(c => {
-            const isEnrolled = enrolled.has(c.id);
-            return (
-              <article key={c.id} className="bg-ui-bg ring-1 ring-black/5 rounded-2xl p-5 space-y-4 hover:-translate-y-0.5 transition-transform">
-                <div className={`w-full aspect-video rounded-xl bg-gradient-to-br ${c.gradient} relative overflow-hidden`}>
-                  <span className="absolute top-3 left-3 text-[10px] font-semibold uppercase tracking-wider bg-white/80 text-text-main px-2 py-1 rounded">
-                    {c.category}
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-start gap-3">
-                    <h3 className="font-display font-semibold text-lg leading-tight">{c.title}</h3>
-                    <span className="shrink-0 text-xs font-medium px-2 py-1 bg-brand-light text-brand rounded">{c.rating.toFixed(1)} ★</span>
-                  </div>
-                  <p className="text-sm text-neutral-600 text-pretty">{c.desc}</p>
-                  <div className="flex items-center gap-4 text-[13px] text-neutral-500 pt-2">
-                    <span>{c.hours} heures</span>
-                    <span>{c.students.toLocaleString("fr-FR")} étudiants</span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => toggle(c.id)}
-                  className={`w-full py-2.5 text-sm font-medium rounded-lg ring-1 transition ${
-                    isEnrolled
-                      ? "bg-brand-light text-brand ring-brand/30"
-                      : "bg-brand text-white ring-brand hover:brightness-110"
-                  }`}
-                >
-                  {isEnrolled ? "✓ Inscrit" : "S'inscrire"}
-                </button>
-              </article>
-            );
-          })}
-        </div>
-
-        {filtered.length === 0 && (
-          <p className="text-center text-neutral-500 py-12">Aucun cours ne correspond à ta recherche.</p>
-        )}
+    <main className="max-w-5xl mx-auto py-12 px-6 space-y-16">
+      <section className="space-y-4 text-center max-w-2xl mx-auto">
+        <span className="text-[11px] uppercase tracking-[0.2em] text-brand font-semibold">Orientation</span>
+        <h1 className="font-display text-4xl md:text-5xl font-semibold leading-tight text-balance">
+          Trouve ta voie en quelques minutes.
+        </h1>
+        <p className="text-neutral-600 text-pretty">
+          Réponds à {QUIZ.length} questions pour découvrir tes spés idéales, tes débouchés et les formations qui te correspondent : licences, BUT, CAP, IUT.
+        </p>
       </section>
+
+      {!showResult && (
+        <section className="bg-ui-bg ring-1 ring-black/5 rounded-3xl p-8 md:p-10">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-xs text-neutral-500">
+              Question {Math.min(answers.length + 1, QUIZ.length)} / {QUIZ.length}
+            </span>
+            {answers.length > 0 && (
+              <button onClick={reset} className="text-xs text-neutral-500 hover:text-brand">Recommencer</button>
+            )}
+          </div>
+          <div className="h-1 bg-neutral-200 rounded-full overflow-hidden mb-8">
+            <div className="h-full bg-brand transition-all" style={{ width: `${(answers.length / QUIZ.length) * 100}%` }} />
+          </div>
+
+          {!done ? (
+            <>
+              <h2 className="font-display text-2xl font-semibold mb-6">{current.q}</h2>
+              <div className="grid gap-2">
+                {current.options.map(opt => (
+                  <button
+                    key={opt.label}
+                    onClick={() => setAnswers([...answers, opt.tag])}
+                    className="w-full text-left p-4 bg-white rounded-xl ring-1 ring-black/5 hover:ring-brand hover:bg-brand-light transition"
+                  >
+                    <span className="text-sm font-medium">{opt.label}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="text-center space-y-4 py-8">
+              <p className="text-sm text-neutral-600">Tu as terminé le questionnaire !</p>
+              <button
+                onClick={() => setShowResult(true)}
+                className="px-6 py-3 bg-brand text-white rounded-lg text-sm font-medium hover:brightness-110"
+              >
+                Voir mon orientation
+              </button>
+            </div>
+          )}
+        </section>
+      )}
+
+      {showResult && reco && result && (
+        <section className="space-y-8 animate-fade-in">
+          <div className="text-center space-y-3">
+            <span className="text-[11px] uppercase tracking-[0.2em] text-brand font-semibold">Ton résultat</span>
+            <h2 className="font-display text-3xl md:text-4xl font-semibold">{PROFILE_LABELS[result]}</h2>
+            <button onClick={reset} className="text-xs text-neutral-500 hover:text-brand underline">Refaire le test</button>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <RecoCard title="Spécialités recommandées" subtitle="À choisir en 1ʳᵉ et terminale" items={reco.spes} accent />
+            <RecoCard title="Débouchés métiers" subtitle="Vers quoi cela peut mener" items={reco.debouches} />
+            <RecoCard title="Licences (université)" subtitle="Bac+3, parcours académique" items={reco.licences} />
+            <RecoCard title="BUT (ex-DUT, Bac+3)" subtitle="Professionnalisant, en IUT" items={reco.buts} />
+            <RecoCard title="CAP" subtitle="Formation pratique en 2 ans" items={reco.caps} />
+            <RecoCard title="IUT recommandés" subtitle="Établissements à explorer" items={reco.iuts} />
+          </div>
+        </section>
+      )}
     </main>
+  );
+}
+
+function RecoCard({ title, subtitle, items, accent = false }: { title: string; subtitle: string; items: string[]; accent?: boolean }) {
+  return (
+    <article className={`p-6 rounded-2xl ring-1 ${accent ? "bg-brand-light ring-brand/20" : "bg-white ring-black/5"}`}>
+      <h3 className="font-display font-semibold text-base">{title}</h3>
+      <p className="text-xs text-neutral-500 mb-4">{subtitle}</p>
+      <ul className="space-y-2">
+        {items.map(it => (
+          <li key={it} className="flex items-start gap-2 text-sm">
+            <span className={`mt-1.5 size-1.5 rounded-full shrink-0 ${accent ? "bg-brand" : "bg-neutral-400"}`} />
+            <span>{it}</span>
+          </li>
+        ))}
+      </ul>
+    </article>
   );
 }
