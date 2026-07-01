@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ReseauRouteImport } from './routes/reseau'
 import { Route as ProfilRouteImport } from './routes/profil'
 import { Route as CarrieresRouteImport } from './routes/carrieres'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 
 const ReseauRoute = ReseauRouteImport.update({
@@ -29,6 +30,11 @@ const CarrieresRoute = CarrieresRouteImport.update({
   path: '/carrieres',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -37,12 +43,14 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/carrieres': typeof CarrieresRoute
   '/profil': typeof ProfilRoute
   '/reseau': typeof ReseauRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/carrieres': typeof CarrieresRoute
   '/profil': typeof ProfilRoute
   '/reseau': typeof ReseauRoute
@@ -50,20 +58,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/carrieres': typeof CarrieresRoute
   '/profil': typeof ProfilRoute
   '/reseau': typeof ReseauRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/carrieres' | '/profil' | '/reseau'
+  fullPaths: '/' | '/auth' | '/carrieres' | '/profil' | '/reseau'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/carrieres' | '/profil' | '/reseau'
-  id: '__root__' | '/' | '/carrieres' | '/profil' | '/reseau'
+  to: '/' | '/auth' | '/carrieres' | '/profil' | '/reseau'
+  id: '__root__' | '/' | '/auth' | '/carrieres' | '/profil' | '/reseau'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
   CarrieresRoute: typeof CarrieresRoute
   ProfilRoute: typeof ProfilRoute
   ReseauRoute: typeof ReseauRoute
@@ -92,6 +102,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CarrieresRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -104,6 +121,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
   CarrieresRoute: CarrieresRoute,
   ProfilRoute: ProfilRoute,
   ReseauRoute: ReseauRoute,
