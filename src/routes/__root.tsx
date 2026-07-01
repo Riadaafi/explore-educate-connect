@@ -8,9 +8,12 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
   return (
@@ -53,13 +56,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Cursus — Plateforme étudiante" },
-      { name: "description", content: "Cours, réseau étudiant, carrières et profil — tout pour réussir tes études." },
+      { name: "description", content: "Orientation MBTI, 1000+ formations, réseau étudiant, messagerie — tout pour ton parcours." },
       { property: "og:title", content: "Cursus — Plateforme étudiante" },
       { name: "twitter:title", content: "Cursus — Plateforme étudiante" },
-      { property: "og:description", content: "Cours, réseau étudiant, carrières et profil — tout pour réussir tes études." },
-      { name: "twitter:description", content: "Cours, réseau étudiant, carrières et profil — tout pour réussir tes études." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/192245f9-c8a5-4244-96f5-d602de902136/id-preview-e1d9b9ba--9c15b259-f20d-41c3-ba32-8d4dfba64552.lovable.app-1782814933080.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/192245f9-c8a5-4244-96f5-d602de902136/id-preview-e1d9b9ba--9c15b259-f20d-41c3-ba32-8d4dfba64552.lovable.app-1782814933080.png" },
+      { property: "og:description", content: "Orientation MBTI, 1000+ formations, réseau étudiant, messagerie — tout pour ton parcours." },
+      { name: "twitter:description", content: "Orientation MBTI, 1000+ formations, réseau étudiant, messagerie — tout pour ton parcours." },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
     ],
@@ -89,19 +90,35 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function NavBar() {
+  const { user, loading } = useAuth();
   const linkCls = "text-sm font-medium text-neutral-600 hover:text-brand transition-colors";
   const activeCls = "text-brand";
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  };
+
   return (
     <nav className="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-black/5">
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link to="/" className="font-display font-semibold text-xl tracking-tight text-brand">
+      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
+        <Link to="/" className="font-display font-semibold text-xl tracking-tight text-brand shrink-0">
           Cursus.
         </Link>
-        <div className="flex gap-8">
+        <div className="flex gap-5 flex-wrap justify-end">
           <Link to="/" className={linkCls} activeProps={{ className: activeCls }} activeOptions={{ exact: true }}>Orientation</Link>
-          <Link to="/reseau" className={linkCls} activeProps={{ className: activeCls }}>Réseau</Link>
+          <Link to="/mbti" className={linkCls} activeProps={{ className: activeCls }}>MBTI</Link>
           <Link to="/carrieres" className={linkCls} activeProps={{ className: activeCls }}>Formations</Link>
-          <Link to="/profil" className={linkCls} activeProps={{ className: activeCls }}>Profil</Link>
+          <Link to="/reseau" className={linkCls} activeProps={{ className: activeCls }}>Réseau</Link>
+          {user && <Link to="/messages" className={linkCls} activeProps={{ className: activeCls }}>Messages</Link>}
+          {user ? (
+            <>
+              <Link to="/profil" className={linkCls} activeProps={{ className: activeCls }}>Profil</Link>
+              <button onClick={signOut} className="text-sm font-medium text-neutral-400 hover:text-brand">Déconnexion</button>
+            </>
+          ) : !loading ? (
+            <Link to="/auth" className="text-sm font-medium bg-brand text-white px-3 py-1.5 rounded-lg hover:brightness-110">Connexion</Link>
+          ) : null}
         </div>
       </div>
     </nav>
@@ -115,6 +132,7 @@ function RootComponent() {
       <div className="min-h-screen bg-surface text-text-main">
         <NavBar />
         <Outlet />
+        <Toaster position="top-right" />
         <footer className="py-12 px-6 border-t border-black/5 bg-ui-bg mt-32">
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
             <span className="font-display font-semibold text-brand">Cursus.</span>
