@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ReseauRouteImport } from './routes/reseau'
 import { Route as ProfilRouteImport } from './routes/profil'
+import { Route as MessagesRouteImport } from './routes/messages'
+import { Route as MbtiRouteImport } from './routes/mbti'
 import { Route as CarrieresRouteImport } from './routes/carrieres'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
@@ -23,6 +25,16 @@ const ReseauRoute = ReseauRouteImport.update({
 const ProfilRoute = ProfilRouteImport.update({
   id: '/profil',
   path: '/profil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MbtiRoute = MbtiRouteImport.update({
+  id: '/mbti',
+  path: '/mbti',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CarrieresRoute = CarrieresRouteImport.update({
@@ -45,6 +57,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/carrieres': typeof CarrieresRoute
+  '/mbti': typeof MbtiRoute
+  '/messages': typeof MessagesRoute
   '/profil': typeof ProfilRoute
   '/reseau': typeof ReseauRoute
 }
@@ -52,6 +66,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/carrieres': typeof CarrieresRoute
+  '/mbti': typeof MbtiRoute
+  '/messages': typeof MessagesRoute
   '/profil': typeof ProfilRoute
   '/reseau': typeof ReseauRoute
 }
@@ -60,21 +76,47 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/carrieres': typeof CarrieresRoute
+  '/mbti': typeof MbtiRoute
+  '/messages': typeof MessagesRoute
   '/profil': typeof ProfilRoute
   '/reseau': typeof ReseauRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/carrieres' | '/profil' | '/reseau'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/carrieres'
+    | '/mbti'
+    | '/messages'
+    | '/profil'
+    | '/reseau'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/carrieres' | '/profil' | '/reseau'
-  id: '__root__' | '/' | '/auth' | '/carrieres' | '/profil' | '/reseau'
+  to:
+    | '/'
+    | '/auth'
+    | '/carrieres'
+    | '/mbti'
+    | '/messages'
+    | '/profil'
+    | '/reseau'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/carrieres'
+    | '/mbti'
+    | '/messages'
+    | '/profil'
+    | '/reseau'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   CarrieresRoute: typeof CarrieresRoute
+  MbtiRoute: typeof MbtiRoute
+  MessagesRoute: typeof MessagesRoute
   ProfilRoute: typeof ProfilRoute
   ReseauRoute: typeof ReseauRoute
 }
@@ -93,6 +135,20 @@ declare module '@tanstack/react-router' {
       path: '/profil'
       fullPath: '/profil'
       preLoaderRoute: typeof ProfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mbti': {
+      id: '/mbti'
+      path: '/mbti'
+      fullPath: '/mbti'
+      preLoaderRoute: typeof MbtiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/carrieres': {
@@ -123,6 +179,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   CarrieresRoute: CarrieresRoute,
+  MbtiRoute: MbtiRoute,
+  MessagesRoute: MessagesRoute,
   ProfilRoute: ProfilRoute,
   ReseauRoute: ReseauRoute,
 }
