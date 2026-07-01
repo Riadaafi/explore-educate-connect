@@ -14,7 +14,180 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      connections: {
+        Row: {
+          created_at: string
+          id: string
+          recipient_id: string
+          requester_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          recipient_id: string
+          requester_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          recipient_id?: string
+          requester_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      formations: {
+        Row: {
+          city: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          duration: string | null
+          expertise_level: string | null
+          id: string
+          name: string
+          outlets: string[] | null
+          school: string
+          sector: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration?: string | null
+          expertise_level?: string | null
+          id?: string
+          name: string
+          outlets?: string[] | null
+          school: string
+          sector: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration?: string | null
+          expertise_level?: string | null
+          id?: string
+          name?: string
+          outlets?: string[] | null
+          school?: string
+          sector?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      mbti_results: {
+        Row: {
+          created_at: string
+          id: string
+          scores: Json
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          scores: Json
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          scores?: Json
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          read: boolean
+          recipient_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          recipient_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          recipient_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_emoji: string | null
+          avatar_gradient: string | null
+          bio: string | null
+          city: string | null
+          created_at: string
+          formation: string | null
+          full_name: string
+          headline: string | null
+          id: string
+          mbti: string | null
+          school: string | null
+          skills: string[] | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_emoji?: string | null
+          avatar_gradient?: string | null
+          bio?: string | null
+          city?: string | null
+          created_at?: string
+          formation?: string | null
+          full_name?: string
+          headline?: string | null
+          id: string
+          mbti?: string | null
+          school?: string | null
+          skills?: string[] | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_emoji?: string | null
+          avatar_gradient?: string | null
+          bio?: string | null
+          city?: string | null
+          created_at?: string
+          formation?: string | null
+          full_name?: string
+          headline?: string | null
+          id?: string
+          mbti?: string | null
+          school?: string | null
+          skills?: string[] | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
