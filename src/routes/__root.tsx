@@ -110,6 +110,7 @@ function NavBar() {
           <Link to="/mbti" className={linkCls} activeProps={{ className: activeCls }}>MBTI</Link>
           <Link to="/carrieres" className={linkCls} activeProps={{ className: activeCls }}>Formations</Link>
           <Link to="/reseau" className={linkCls} activeProps={{ className: activeCls }}>Réseau</Link>
+          {user && <Link to="/twin" className={linkCls} activeProps={{ className: activeCls }}>🧬 Twin</Link>}
           {user && <Link to="/messages" className={linkCls} activeProps={{ className: activeCls }}>Messages</Link>}
           {user ? (
             <>
